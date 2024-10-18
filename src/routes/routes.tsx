@@ -18,9 +18,8 @@ export const renderRoutes = (route: RouteProperties) => {
                     <Suspense fallback={<Spinner />}>
                         <route.element />
                     </Suspense>
-                }
-            >
-                {route?.children?.map(child => renderRoutes(child))}
+                }>
+                {route?.children?.map((child) => renderRoutes(child))}
             </Route>
         );
     }

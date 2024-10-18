@@ -27,7 +27,7 @@ export const Sidebar = ({ itemList, isLabelShown, setIsLabelShown }: SidebarProp
             />
             <div className="grow text-center">
                 <div className="p-3 relative">
-                    {itemList?.map((item, ind) => {
+                    {itemList?.map((item) => {
                         return (
                             <SidebarItem
                                 isLabelShown={isLabelShown}

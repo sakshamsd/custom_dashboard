@@ -2,14 +2,11 @@ import { Outlet } from "react-router-dom";
 import TopNavigation from "./layout/header/Header";
 import { Sidebar } from "./layout/Sidebar";
 import { routePaths } from "./routes/route-path";
-import { IconNode, LayoutDashboard } from "lucide-react";
+import { IconNode } from "lucide-react";
 import { layoutGridMoveHorizontal } from "@lucide/lab";
 import { useState } from "react";
 
-type GlobalSidebarProps = {
-    isLabelShown: boolean;
-    setIsLabelShown: () => void;
-};
+
 
 export interface ISidebarList {
     label: string;
@@ -18,12 +15,12 @@ export interface ISidebarList {
 }
 const SIDEBAR_LIST: Array<ISidebarList> = [
     {
-        label: "common_dashboard",
+        label: "Dashboard",
         icon: layoutGridMoveHorizontal,
         path: routePaths.root,
     },
     {
-        label: "common_connections",
+        label: "Settings",
         icon: layoutGridMoveHorizontal,
         path: routePaths.settings,
     },

@@ -4,7 +4,7 @@ import {
     DropdownMenuTrigger,
 } from "../../../components/Dropdown";
 import { Button } from "../../../components/Button";
-import { CrossIcon, FileWarning, Icon, SidebarClose } from "lucide-react";
+import { CrossIcon, FileWarning, SidebarClose } from "lucide-react";
 import { Badge } from "../../../components/Badge/Badge";
 import { ScrollArea } from "../../../components/ScrollArea/ScrollArea";
 export const notificationItems = [

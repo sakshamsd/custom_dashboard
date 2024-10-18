@@ -11,7 +11,6 @@ interface IconProps {
 }
 
 const Icon = ({ name, color, size }: IconProps) => {
-    console.log(icons, "iconssss");
     const LucideIcon = icons[name];
 
     return (
@@ -21,14 +20,14 @@ const Icon = ({ name, color, size }: IconProps) => {
         />
     );
 };
-interface NumberCardProps{
-    value: string
-    detail: string
-    icon: keyof typeof icons
-    color: string
+interface NumberCardProps {
+    value: string | number;
+    detail: string;
+    icon: keyof typeof icons;
+    color: string;
 }
 
-export default function NumberCard({value, detail, icon}: NumberCardProps) {
+export default function NumberCard({ value, detail, icon }: NumberCardProps) {
     return (
         <Card className="w-[350px]">
             <CardContent className="bg-green-100 px-4 py-8">
