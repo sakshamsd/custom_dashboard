@@ -29,13 +29,13 @@ interface NumberCardProps {
 
 export default function NumberCard({ value, detail, icon }: NumberCardProps) {
     return (
-        <Card className="w-[350px]">
-            <CardContent className="bg-green-100 px-4 py-8">
+        <Card>
+            <CardContent className="bg-green-100 p-4 h-full">
                 <div className=" flex flex-col justify-center items-center">
-                    <span className=" h-20 w-20 rounded-full bg-green-300 flex justify-center items-center mb-4 opacity-85">
+                    <span className=" h-14 w-14 rounded-full bg-green-300 flex justify-center items-center mb-4 opacity-85">
                         <Icon
                             name={icon}
-                            size={32}
+                            size={24}
                             color="green"
                         />
                     </span>

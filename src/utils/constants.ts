@@ -16,7 +16,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
 };
 
 export const DEFAULT_SIZES: Record<ItemType, ItemTypeConfig> = {
-    numberCard: { w: 2, h: 2 },
+    numberCard: { w: 3, h: 3 },
     indicator: { w: 2, h: 2 },
     button: { w: 2, h: 2 },
     // chart: { w: 6, h: 4 },

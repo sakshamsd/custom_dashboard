@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { Layout } from "react-grid-layout";
-import GridLayout from "react-grid-layout";
+import { Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -19,6 +19,7 @@ interface DashboardItemProps {
     settings: DashboardItemSettings;
     // onSettingsChange: (newSettings: DashboardItemSettings) => void;
 }
+const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const DashboardItem: React.FC<DashboardItemProps> = ({ type, settings }) => {
     const renderContent = () => {
@@ -89,9 +90,10 @@ const Dashboard: React.FC = () => {
         const newLayoutItem: Layout = {
             i: newItemId,
             x: (layout.length * 1) % 12,
-            y: Infinity,
+            y: 2,
             w: defaultSize.w,
             h: defaultSize.h,
+            static: false,
         };
 
         const newItem: DashboardItem = {
@@ -160,16 +162,17 @@ const Dashboard: React.FC = () => {
                 addItem={addItem}
             />
 
-            <GridLayout
-                className="layout"
+            <ResponsiveGridLayout
+                className="layout bg-slate-400"
                 isResizable={isEditable}
                 isDraggable={isEditable}
                 isDroppable={isEditable}
-                layout={layout}
+                layouts={{ lg: layout }}
                 onLayoutChange={onLayoutChange}
-                cols={12}
+                cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
                 rowHeight={50}
-                width={1200}>
+                // width={1200}
+            >
                 {items.map((item) => (
                     <div key={item.id}>
                         <DashboardItem
@@ -181,7 +184,7 @@ const Dashboard: React.FC = () => {
                         />
                     </div>
                 ))}
-            </GridLayout>
+            </ResponsiveGridLayout>
         </div>
     );
 };
