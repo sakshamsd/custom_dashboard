@@ -8,6 +8,8 @@ interface ItemTypeConfig {
 }
 
 interface DashboardItemSettings {
+    format: string | undefined;
+    data: string;
     title?: string;
     value?: string | number;
     color?: string;
