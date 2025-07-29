@@ -1,12 +1,10 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/Card";
 import { CHART_TYPE } from "../../utils/constants";
 import BarChart from "./BarChart";
 import LineChart from "./LineChart";
 import PieChart from "./PieChart";
 
 interface ChartsProps {
-    title: string;
     type: ChartType;
 }
 const mockData: MockData = {
@@ -24,7 +22,7 @@ const mockData: MockData = {
     })),
 };
 
-function Charts({ title, type }: ChartsProps) {
+function Charts({ type }: ChartsProps) {
     const returnChart = () => {
         switch (type) {
             case CHART_TYPE.BAR_CHART:
@@ -37,14 +35,7 @@ function Charts({ title, type }: ChartsProps) {
                 return <div>No Chart</div>;
         }
     };
-    return (
-        <Card className="h-full">
-            <CardHeader>
-                <CardTitle>{title || "Chart"}</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[calc(100%-4rem)]">{returnChart()}</CardContent>
-        </Card>
-    );
+    return returnChart();
 }
 
 export default Charts;

@@ -6,6 +6,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogFooter,
+    DialogDescription,
 } from "../../components/Dialog";
 import { Button } from "../../components/Button";
 import { Input } from "../../components/Input";
@@ -17,20 +18,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../../components/Select";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/Card";
-import {
-    BarChart3,
-    LineChart,
-    PieChart,
-    TrendingUp,
-    Activity,
-    Type,
-    Table,
-    MousePointer,
-    AlertCircle,
-    CheckCircle,
-} from "lucide-react";
-import { ITEM_TYPES } from "../../utils/constants";
+import { Card, CardContent } from "../../components/Card";
+import { Type, AlertCircle, CheckCircle } from "lucide-react";
+import { DATA_SOURCES, ITEM_TYPES, WIDGET_TYPES } from "../../utils/constants";
 import Charts from "../../DashboardItems/Charts/Charts";
 import NumberCard from "../../DashboardItems/NumberCard/NumberCard";
 import Indicaor from "../../DashboardItems/Indicator/Indicaor";
@@ -53,98 +43,18 @@ interface DataValidation {
     parsedData?: any;
 }
 
-const WIDGET_TYPES = [
-    {
-        id: "line-chart",
-        name: "Line Chart",
-        description: "Show trends over time",
-        icon: LineChart,
-        type: ITEM_TYPES.LINE_CHART,
-        category: "Charts",
-        requiredDataType: "array",
-        sampleData: `[
-  {"name": "Jan", "value": 400},
-  {"name": "Feb", "value": 300},
-  {"name": "Mar", "value": 600}
-]`,
-    },
-    {
-        id: "bar-chart",
-        name: "Bar Chart",
-        description: "Compare different categories",
-        icon: BarChart3,
-        type: ITEM_TYPES.BAR_CHART,
-        category: "Charts",
-        requiredDataType: "array",
-        sampleData: `[
-  {"name": "Product A", "value": 400},
-  {"name": "Product B", "value": 300},
-  {"name": "Product C", "value": 200}
-]`,
-    },
-    {
-        id: "pie-chart",
-        name: "Pie Chart",
-        description: "Show proportions",
-        icon: PieChart,
-        type: ITEM_TYPES.PIE_CHART,
-        category: "Charts",
-        requiredDataType: "array",
-        sampleData: `[
-  {"name": "Desktop", "value": 60},
-  {"name": "Mobile", "value": 30},
-  {"name": "Tablet", "value": 10}
-]`,
-    },
-    {
-        id: "number-card",
-        name: "Number Card",
-        description: "Display key metrics",
-        icon: TrendingUp,
-        type: ITEM_TYPES.NUMBER_CARD,
-        category: "Metrics",
-        requiredDataType: "object",
-        sampleData: "{\"value\": 124500}",
-    },
-    {
-        id: "indicator",
-        name: "Status Indicator",
-        description: "Show system status",
-        icon: Activity,
-        type: ITEM_TYPES.INDICATOR,
-        category: "Metrics",
-        requiredDataType: "object",
-        sampleData: "{\"status\": \"online\"}",
-    },
-    {
-        id: "button",
-        name: "Button",
-        description: "Action trigger",
-        icon: MousePointer,
-        type: ITEM_TYPES.BUTTON,
-        category: "Controls",
-        requiredDataType: "object",
-        sampleData: "{\"label\": \"Click me\"}",
-    },
-];
-
-const DATA_SOURCES = [
-    { value: "static", label: "Static Data" },
-    { value: "api", label: "API Endpoint" },
-    { value: "database", label: "Database Query" },
-    { value: "realtime", label: "Real-time Stream" },
-];
-
-interface AddWidgetDialogProps {
+interface SingleStepAddWidgetDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onAddWidget: (widgetConfig: any) => void;
+    editingWidget?: (DashboardItem & { data?: string }) | null; // Add editing support
 }
 
-export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
+export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
     isOpen,
     onClose,
     onAddWidget,
+    editingWidget = null,
 }) => {
     const [selectedType, setSelectedType] = useState<string>("");
     const [config, setConfig] = useState<WidgetConfig>({
@@ -156,24 +66,56 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
     const [dataInput, setDataInput] = useState<string>("");
 
     const selectedWidget = WIDGET_TYPES.find((w) => w.id === selectedType);
+    const isEditMode = !!editingWidget;
 
-    // Reset form when dialog opens/closes
+    // Reset form when dialog opens/closes or when editing widget changes
     useEffect(() => {
         if (isOpen) {
-            setSelectedType("");
-            setConfig({
-                type: ITEM_TYPES.LINE_CHART,
-                title: "",
-                dataType: "array",
-                data: "",
-            });
-            setDataInput("");
-        }
-    }, [isOpen]);
+            if (editingWidget) {
+                // Edit mode - populate with existing widget data
+                const widgetType = WIDGET_TYPES.find((w) => w.type === editingWidget.type);
+                if (widgetType) {
+                    setSelectedType(widgetType.id);
+                    setConfig({
+                        type: editingWidget.type,
+                        title: editingWidget.settings.title || "",
+                        dataType: widgetType.requiredDataType as "object" | "array",
+                        // data: "",
+                        color: editingWidget.settings.color,
+                        // format: editingWidget.settings.format,
+                        label: editingWidget.settings.label,
+                        ...editingWidget.settings,
+                    });
 
-    // Update config when widget type changes
+                    // Try to get existing data or use sample data
+                    if (editingWidget.data) {
+                        setDataInput(JSON.stringify(editingWidget.data, null, 2));
+                    } else if (editingWidget.settings.value !== undefined) {
+                        // For number cards, construct data from value
+                        setDataInput(
+                            JSON.stringify({ value: editingWidget.settings.value }, null, 2),
+                        );
+                    } else {
+                        setDataInput(widgetType.sampleData);
+                    }
+                }
+            } else {
+                // Add mode - reset to defaults
+                setSelectedType("");
+                setConfig({
+                    type: ITEM_TYPES.LINE_CHART,
+                    title: "",
+                    dataType: "array",
+                    data: "",
+                });
+                setDataInput("");
+            }
+        }
+    }, [isOpen, editingWidget]);
+
+    // Update config when widget type changes (only in add mode)
     useEffect(() => {
-        if (selectedWidget) {
+        if (selectedWidget && !isEditMode) {
             setConfig((prev) => ({
                 ...prev,
                 type: selectedWidget.type,
@@ -182,7 +124,7 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
             }));
             setDataInput(selectedWidget.sampleData);
         }
-    }, [selectedWidget]);
+    }, [selectedWidget, isEditMode]);
 
     // Validate data input
     const dataValidation = useMemo((): DataValidation => {
@@ -328,12 +270,7 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
                 case ITEM_TYPES.LINE_CHART:
                 case ITEM_TYPES.BAR_CHART:
                 case ITEM_TYPES.PIE_CHART:
-                    return (
-                        <Charts
-                            title={config.title || selectedWidget.name}
-                            type={selectedWidget.type as ChartType}
-                        />
-                    );
+                    return <Charts type={selectedWidget.type as ChartType} />;
                 default:
                     return (
                         <div className="h-full flex items-center justify-center text-gray-400">
@@ -425,9 +362,21 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
         <Dialog
             open={isOpen}
             onOpenChange={onClose}>
-            <DialogContent className="max-w-6xl max-h-[85vh] overflow-hidden">
+            <DialogContent
+                className="max-w-6xl max-h-[85vh] overflow-hidden"
+                aria-description="Add or edit a widget"
+                aria-describedby="widget-dialog-description">
                 <DialogHeader>
-                    <DialogTitle>Add Widget</DialogTitle>
+                    <DialogTitle>
+                        {isEditMode
+                            ? `Edit ${editingWidget?.settings?.title || "Widget"}`
+                            : "Add Widget"}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {isEditMode
+                            ? "Modify the widget settings and data."
+                            : "Select a widget type and configure its settings."}
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid grid-cols-12 gap-6 h-[600px]">
@@ -637,7 +586,7 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
                             <Button
                                 onClick={handleAddWidget}
                                 disabled={!selectedWidget || !dataValidation.isValid}>
-                                Add Widget
+                                {isEditMode ? "Update Widget" : "Add Widget"}
                             </Button>
                         </div>
                     </div>

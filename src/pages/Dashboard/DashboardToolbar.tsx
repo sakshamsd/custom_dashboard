@@ -3,8 +3,7 @@ import React from "react";
 import {
     Plus,
     Save,
-    Undo,
-    Redo,
+   
     Settings,
     Share2,
     Download,
@@ -25,14 +24,12 @@ import { cn } from "../../utils";
 interface DashboardToolbarProps {
     isEditing: boolean;
     hasUnsavedChanges: boolean;
-    canUndo: boolean;
-    canRedo: boolean;
+
     onStartEdit: () => void;
     onAddWidget: () => void;
     onSave: () => void;
     onCancel: () => void;
-    onUndo: () => void;
-    onRedo: () => void;
+
     onShare: () => void;
     onExport: () => void;
     onSettings: () => void;
@@ -41,20 +38,18 @@ interface DashboardToolbarProps {
 export const DashboardToolbar: React.FC<DashboardToolbarProps> = ({
     isEditing,
     hasUnsavedChanges,
-    canUndo,
-    canRedo,
+
     onAddWidget,
     onStartEdit,
     onSave,
     onCancel,
-    onUndo,
-    onRedo,
+
     onShare,
     onExport,
     onSettings,
 }) => {
     return (
-        <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm z-30">
+        <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-end px-6 shadow-sm z-30">
             {/* Left Section */}
             <div className="flex items-center space-x-6">
                 {/* Edit Mode Actions */}
@@ -67,29 +62,6 @@ export const DashboardToolbar: React.FC<DashboardToolbarProps> = ({
                             <Plus className="w-4 h-4 mr-2" />
                             Add Widget
                         </Button>
-
-                        {/* History Controls */}
-                        <div className="h-6 w-px bg-gray-300" />
-                        <div className="flex items-center space-x-1">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={onUndo}
-                                disabled={!canUndo}
-                                className="p-2 hover:bg-gray-100 disabled:opacity-50"
-                                title="Undo (Ctrl+Z)">
-                                <Undo className="w-4 h-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={onRedo}
-                                disabled={!canRedo}
-                                className="p-2 hover:bg-gray-100 disabled:opacity-50"
-                                title="Redo (Ctrl+Y)">
-                                <Redo className="w-4 h-4" />
-                            </Button>
-                        </div>
 
                         {/* Status Indicator */}
                         {hasUnsavedChanges && (

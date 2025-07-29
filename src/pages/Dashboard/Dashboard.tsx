@@ -1,4 +1,3 @@
-// src/pages/Dashboard/CleanDashboard.tsx
 import React, { useState, useCallback, useEffect } from "react";
 import type { Layout } from "react-grid-layout";
 import { Responsive, WidthProvider } from "react-grid-layout";
@@ -6,136 +5,16 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
 import { Edit3, Grid3x3, TrendingUp, BarChart3 } from "lucide-react";
-import { Card, CardContent } from "../../components/Card";
 import { Button } from "../../components/Button";
-import NumberCard from "../../DashboardItems/NumberCard/NumberCard";
-import Indicaor from "../../DashboardItems/Indicator/Indicaor";
-import Charts from "../../DashboardItems/Charts/Charts";
-import { DEFAULT_SIZES, ITEM_TYPES } from "../../utils/constants";
+
 import { cn } from "../../utils";
 import { AddWidgetDialog } from "./AddWidgetDialog";
 import { DashboardToolbar } from "./DashboardToolbar";
+import DashboardItem from "./DashboardItem";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-interface DashboardItemProps {
-    type: ItemType;
-    settings: DashboardItemSettings;
-    isSelected?: boolean;
-    isEditing?: boolean;
-    onSelect?: () => void;
-    onDelete?: () => void;
-    onEdit?: () => void;
-}
 /* eslint-disable */
-const DashboardItem: React.FC<DashboardItemProps> = ({
-    type,
-    settings,
-    isSelected = false,
-    isEditing = false,
-    onSelect,
-    onDelete,
-    onEdit,
-}) => {
-    const renderContent = () => {
-        switch (type) {
-            case ITEM_TYPES.NUMBER_CARD:
-                return (
-                    <NumberCard
-                        value={settings.value || ""}
-                        detail={settings.title || ""}
-                        color="green"
-                        icon={"TrendingUp"}
-                    />
-                );
-            case ITEM_TYPES.INDICATOR:
-                return <Indicaor title={settings.title || "Indicator"} />;
-            case ITEM_TYPES.BUTTON:
-                return (
-                    <Card className="h-full">
-                        <CardContent className="h-full flex items-center justify-center">
-                            <Button>{settings.label || "Button"}</Button>
-                        </CardContent>
-                    </Card>
-                );
-            case ITEM_TYPES.PIE_CHART:
-            case ITEM_TYPES.LINE_CHART:
-            case ITEM_TYPES.BAR_CHART:
-                return (
-                    <Charts
-                        title={settings.title || ""}
-                        type={type as ChartType}
-                    />
-                );
-            default:
-                return (
-                    <Card className="h-full">
-                        <CardContent className="h-full flex items-center justify-center">
-                            <div className="text-center text-gray-400">
-                                <Grid3x3 className="w-8 h-8 mx-auto mb-2" />
-                                <p className="text-sm">Unknown Widget</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                );
-        }
-    };
-
-    return (
-        <div
-            className={cn(
-                "relative h-full group transition-all duration-200",
-                isSelected && "ring-2 ring-blue-500 ring-opacity-60",
-                isEditing && "cursor-pointer",
-            )}
-            onClick={onSelect}>
-            {renderContent()}
-
-            {/* Edit Controls */}
-            {isEditing && (
-                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-5 transition-all duration-200">
-                    {/* Selection Indicator */}
-                    {isSelected && (
-                        <div className="absolute -top-8 left-0 bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
-                            {settings.title || type}
-                        </div>
-                    )}
-
-                    {/* Hover Controls */}
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="flex space-x-1">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 bg-white/90 hover:bg-white shadow-sm"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onEdit?.();
-                                }}>
-                                <Edit3 className="w-3 h-3" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 bg-white/90 hover:bg-white shadow-sm text-red-600 hover:text-red-700"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDelete?.();
-                                }}>
-                                ×
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Resize Handle */}
-                    {isSelected && (
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 border-2 border-white rounded-full cursor-se-resize"></div>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-};
 
 const CleanDashboard: React.FC = () => {
     // Dashboard state
@@ -144,8 +23,10 @@ const CleanDashboard: React.FC = () => {
 
     // Edit state
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [isAddingItem, setIsAddingItem] = useState<boolean>(false);
+
+    // New state for tracking edited widget
+    const [editingWidget, setEditingWidget] = useState<DashboardItem | null>(null);
 
     // Save state
     const [savedState, setSavedState] = useState<{ items: DashboardItem[]; layout: Layout[] }>({
@@ -187,7 +68,7 @@ const CleanDashboard: React.FC = () => {
     // Handle start edit
     const handleStartEdit = useCallback(() => {
         setIsEditing(true);
-        setSelectedItemId(null);
+        // setSelectedItemId(null);
         // Save current state as starting point
         const currentState = { items: [...items], layout: [...layout] };
         setHistory([currentState]);
@@ -199,6 +80,7 @@ const CleanDashboard: React.FC = () => {
         if (!isEditing) {
             return;
         } // Should not happen with UI logic
+        setEditingWidget(null);
         setIsAddingItem(true);
     }, [isEditing]);
 
@@ -210,7 +92,7 @@ const CleanDashboard: React.FC = () => {
 
         setSavedState({ items: [...items], layout: [...layout] });
         setIsEditing(false);
-        setSelectedItemId(null);
+        // setSelectedItemId(null);
 
         console.log("Dashboard saved:", { items, layout });
         console.log("✅ Dashboard saved successfully!");
@@ -224,14 +106,59 @@ const CleanDashboard: React.FC = () => {
         }
 
         setIsEditing(false);
-        setSelectedItemId(null);
+        // setSelectedItemId(null);
         setHistory([]);
         setHistoryIndex(-1);
     }, [hasUnsavedChanges, savedState]);
 
+    // Handle edit widget
+    const handleEditWidget = useCallback(
+        (itemId: string) => {
+            const widget = items.find((item) => item.id === itemId);
+            if (widget) {
+                setEditingWidget(widget);
+                setIsAddingItem(true); // Reuse the same dialog
+            }
+        },
+        [items],
+    );
+
+    // Handle update widget (after editing)
+    const updateWidget = useCallback(
+        (widgetConfig: any) => {
+            if (!editingWidget) return;
+
+            const updatedItem: DashboardItem = {
+                ...editingWidget,
+                type: widgetConfig.type,
+                settings: {
+                    title: widgetConfig.title,
+                    value: widgetConfig.config?.value,
+                    color: widgetConfig.config?.color,
+                    label: widgetConfig.config?.label,
+                    ...widgetConfig.config,
+                },
+            };
+
+            setItems((prev) =>
+                prev.map((item) => (item.id === editingWidget.id ? updatedItem : item)),
+            );
+
+            setEditingWidget(null);
+            setIsAddingItem(false);
+            setTimeout(saveToHistory, 0);
+        },
+        [editingWidget, saveToHistory],
+    );
+
     // Handle adding widget
     const addItem = useCallback(
         (widgetConfig: any) => {
+            if (editingWidget) {
+                // This is an edit operation
+                updateWidget(widgetConfig);
+                return;
+            }
             const newItemId = `item-${Date.now()}`;
             // const defaultSize = DEFAULT_SIZES[widgetConfig.type] || { w: 6, h: 4 };
             const defaultSize = { w: 6, h: 4 };
@@ -263,7 +190,7 @@ const CleanDashboard: React.FC = () => {
 
             setTimeout(saveToHistory, 0);
         },
-        [layout, saveToHistory],
+        [layout, saveToHistory, editingWidget, updateWidget], // Added editingWidget and updateWidget to dependencies
     );
 
     // Handle deleting item
@@ -271,76 +198,22 @@ const CleanDashboard: React.FC = () => {
         (itemId: string) => {
             setLayout((prev) => prev.filter((l) => l.i !== itemId));
             setItems((prev) => prev.filter((item) => item.id !== itemId));
-            setSelectedItemId(null);
+            // setSelectedItemId(null);
             setTimeout(saveToHistory, 0);
         },
         [saveToHistory],
     );
 
+    // Handle close dialog
+    // const handleCloseDialog = useCallback(() => {
+    //     setIsAddingItem(false);
+    //     setEditingWidget(null);
+    // }, []);
+
     // Handle layout change
     const onLayoutChange = useCallback((newLayout: Layout[]) => {
         setLayout(newLayout);
     }, []);
-
-    // Handle undo
-    const handleUndo = useCallback(() => {
-        if (historyIndex > 0) {
-            const prevState = history[historyIndex - 1];
-            setItems(prevState.items);
-            setLayout(prevState.layout);
-            setHistoryIndex(historyIndex - 1);
-        }
-    }, [history, historyIndex]);
-
-    // Handle redo
-    const handleRedo = useCallback(() => {
-        if (historyIndex < history.length - 1) {
-            const nextState = history[historyIndex + 1];
-            setItems(nextState.items);
-            setLayout(nextState.layout);
-            setHistoryIndex(historyIndex + 1);
-        }
-    }, [history, historyIndex]);
-
-    // Keyboard shortcuts
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (!isEditing) {
-                return;
-            }
-
-            if (e.metaKey || e.ctrlKey) {
-                switch (e.key) {
-                    case "z":
-                        if (e.shiftKey) {
-                            e.preventDefault();
-                            handleRedo();
-                        } else {
-                            e.preventDefault();
-                            handleUndo();
-                        }
-                        break;
-                    case "y":
-                        e.preventDefault();
-                        handleRedo();
-                        break;
-                    case "s":
-                        e.preventDefault();
-                        handleSave();
-                        break;
-                }
-            }
-            if (e.key === "Escape") {
-                handleCancel();
-            }
-        };
-
-        document.addEventListener("keydown", handleKeyDown);
-        return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [isEditing, handleUndo, handleRedo, handleSave, handleCancel]);
-
-    const canUndo = historyIndex > 0;
-    const canRedo = historyIndex < history.length - 1;
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">
@@ -348,14 +221,10 @@ const CleanDashboard: React.FC = () => {
             <DashboardToolbar
                 isEditing={isEditing}
                 hasUnsavedChanges={hasUnsavedChanges}
-                canUndo={canUndo}
-                canRedo={canRedo}
                 onStartEdit={handleStartEdit}
                 onAddWidget={handleAddWidget}
                 onSave={handleSave}
                 onCancel={handleCancel}
-                onUndo={handleUndo}
-                onRedo={handleRedo}
                 onShare={() => console.log("Share dashboard")}
                 onExport={() => console.log("Export dashboard")}
                 onSettings={() => console.log("Dashboard settings")}
@@ -363,13 +232,10 @@ const CleanDashboard: React.FC = () => {
 
             {/* Main Content */}
             <div className="flex-1 overflow-hidden">
-                <div className="h-full p-6">
+                <div className=" p-6 widget-container">
                     {items.length > 0 ? (
                         <ResponsiveGridLayout
-                            className={cn(
-                                "layout transition-all duration-300",
-                                isEditing && "editing-mode",
-                            )}
+                            className="layout"
                             isResizable={isEditing}
                             isDraggable={isEditing}
                             layouts={{ lg: layout }}
@@ -380,17 +246,13 @@ const CleanDashboard: React.FC = () => {
                             containerPadding={[0, 0]}
                             useCSSTransforms={true}>
                             {items.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="widget-container">
+                                <div key={item.id}>
                                     <DashboardItem
                                         type={item.type}
                                         settings={item.settings}
-                                        isSelected={selectedItemId === item.id}
                                         isEditing={isEditing}
-                                        onSelect={() => isEditing && setSelectedItemId(item.id)}
                                         onDelete={() => deleteItem(item.id)}
-                                        onEdit={() => console.log("Edit item:", item.id)}
+                                        onEdit={() => handleEditWidget(item.id)}
                                     />
                                 </div>
                             ))}
@@ -456,6 +318,7 @@ const CleanDashboard: React.FC = () => {
                 isOpen={isAddingItem}
                 onClose={() => setIsAddingItem(false)}
                 onAddWidget={addItem}
+                editingWidget={editingWidget}
             />
         </div>
     );
