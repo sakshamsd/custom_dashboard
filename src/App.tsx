@@ -1,11 +1,15 @@
 import { Routes } from "react-router-dom";
 import rootRoute from "./routes/rootRoute";
 import { renderRoutes } from "./routes/routes";
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 function App() {
     return (
         <>
-            <Routes>{rootRoute.map((route) => renderRoutes(route))}</Routes>
+            <Provider store={store}>
+                <Routes>{rootRoute.map((route) => renderRoutes(route))}</Routes>
+            </Provider>
         </>
     );
 }

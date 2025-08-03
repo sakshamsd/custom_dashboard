@@ -2,24 +2,31 @@ type ChartType = "LINE_CHART" | "BAR_CHART" | "PIE_CHART";
 
 type ItemType = "numberCard" | "indicator" | "button" | ChartType;
 
+interface Dashboard {
+    username: string;
+    dashboardId: string;
+    dashboardItem: DashboardItem[];
+}
+
 interface ItemTypeConfig {
     w: number;
     h: number;
 }
 
-interface DashboardItemSettings {
-    format: string | undefined;
-    data: string;
-    title?: string;
-    value?: string | number;
-    color?: string;
-    label?: string;
-}
-
 interface DashboardItem {
     id: string;
+    dataId: string | null; // Optional field to link to data source
+    title: string;
+    layout: {
+        i: string; // Unique identifier for the item
+        x: number; // Horizontal position
+        y: number; // Vertical position
+        w: number; // Width in grid units
+        h: number; // Height in grid units
+    };
+    // Optional fields for additional settings
+
     type: ItemType;
-    settings: DashboardItemSettings;
 }
 
 interface ChartDataPoint {
@@ -27,11 +34,34 @@ interface ChartDataPoint {
     value: number;
 }
 
-interface MockData {
-    LINE_CHART: ChartDataPoint[];
-    BAR_CHART: ChartDataPoint[];
-    PIE_CHART: ChartDataPoint[];
-}
 interface ChartDataProps {
     data: ChartDataPoint[];
+}
+
+interface WidgetConfig {
+    type: ItemType;
+    title: string;
+    dataType: "object" | "array" | "static";
+    data: any;
+    color?: string;
+    format?: string;
+    label?: string;
+    [key: string]: any;
+}
+
+interface AddWidgetDialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onAddWidget: (widgetConfig: any) => void;
+    editingWidget?: (DashboardItem & { data?: string }) | null; // Add editing support
+}
+
+interface DashboardItemProps {
+    type: ItemType;
+    settings: DashboardItem;
+    isSelected?: boolean;
+    isEditing?: boolean;
+    onSelect?: () => void;
+    onDelete: () => void;
+    onEdit: () => void;
 }

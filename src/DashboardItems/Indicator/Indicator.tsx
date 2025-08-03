@@ -4,7 +4,7 @@ interface IndicatorProps {
     title: string;
     value?: string | number;
 }
-function Indicaor({ title }: IndicatorProps) {
+function Indicator({ title }: IndicatorProps) {
     return (
         <Card className="h-full">
             <CardHeader>
@@ -17,4 +17,4 @@ function Indicaor({ title }: IndicatorProps) {
     );
 }
 
-export default Indicaor;
+export default Indicator;

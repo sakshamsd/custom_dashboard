@@ -16,7 +16,7 @@
         "noEmit": true,
         "jsx": "react-jsx"
     },
-    "include": ["src"],
+    "include": ["src", "src/pages/Dashboard/Dashboard.d.ts"],
     "baseUrl": ".",
     "paths": {
         "@/*": ["./*"]

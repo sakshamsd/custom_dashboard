@@ -1,5 +1,4 @@
-// src/pages/Dashboard/SingleStepAddWidgetDialog.tsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -23,47 +22,23 @@ import { Type, AlertCircle, CheckCircle } from "lucide-react";
 import { DATA_SOURCES, ITEM_TYPES, WIDGET_TYPES } from "../../utils/constants";
 import Charts from "../../DashboardItems/Charts/Charts";
 import NumberCard from "../../DashboardItems/NumberCard/NumberCard";
-import Indicaor from "../../DashboardItems/Indicator/Indicaor";
+import Indicaor from "../../DashboardItems/Indicator/Indicator";
 import { cn } from "../../utils";
 
-interface WidgetConfig {
-    type: ItemType;
-    title: string;
-    dataType: "object" | "array" | "static";
-    data: any;
-    color?: string;
-    format?: string;
-    label?: string;
-    [key: string]: any;
-}
-
-interface DataValidation {
-    isValid: boolean;
-    error?: string;
-    parsedData?: any;
-}
-
-interface SingleStepAddWidgetDialogProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onAddWidget: (widgetConfig: any) => void;
-    editingWidget?: (DashboardItem & { data?: string }) | null; // Add editing support
-}
-
-export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
+export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
     isOpen,
     onClose,
     onAddWidget,
     editingWidget = null,
 }) => {
     const [selectedType, setSelectedType] = useState<string>("");
-    const [config, setConfig] = useState<WidgetConfig>({
-        type: ITEM_TYPES.LINE_CHART,
+    const [config, setConfig] = useState<DashboardItem>({
+        dataId: "",
+        id: "",
         title: "",
-        dataType: "array",
-        data: "",
+        type: ITEM_TYPES.LINE_CHART,
+        layout: { x: 0, y: 0, w: 6, h: 4, i: "" },
     });
-    const [dataInput, setDataInput] = useState<string>("");
 
     const selectedWidget = WIDGET_TYPES.find((w) => w.id === selectedType);
     const isEditMode = !!editingWidget;
@@ -77,140 +52,31 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                 if (widgetType) {
                     setSelectedType(widgetType.id);
                     setConfig({
-                        type: editingWidget.type,
-                        title: editingWidget.settings.title || "",
-                        dataType: widgetType.requiredDataType as "object" | "array",
-                        // data: "",
-                        color: editingWidget.settings.color,
-                        // format: editingWidget.settings.format,
-                        label: editingWidget.settings.label,
-                        ...editingWidget.settings,
+                        ...editingWidget,
                     });
-
-                    // Try to get existing data or use sample data
-                    if (editingWidget.data) {
-                        setDataInput(JSON.stringify(editingWidget.data, null, 2));
-                    } else if (editingWidget.settings.value !== undefined) {
-                        // For number cards, construct data from value
-                        setDataInput(
-                            JSON.stringify({ value: editingWidget.settings.value }, null, 2),
-                        );
-                    } else {
-                        setDataInput(widgetType.sampleData);
-                    }
                 }
-            } else {
-                // Add mode - reset to defaults
-                setSelectedType("");
-                setConfig({
-                    type: ITEM_TYPES.LINE_CHART,
-                    title: "",
-                    dataType: "array",
-                    data: "",
-                });
-                setDataInput("");
             }
         }
     }, [isOpen, editingWidget]);
 
-    // Update config when widget type changes (only in add mode)
-    useEffect(() => {
-        if (selectedWidget && !isEditMode) {
-            setConfig((prev) => ({
-                ...prev,
-                type: selectedWidget.type,
-                title: selectedWidget.name,
-                dataType: selectedWidget.requiredDataType as "object" | "array",
-            }));
-            setDataInput(selectedWidget.sampleData);
-        }
-    }, [selectedWidget, isEditMode]);
-
-    // Validate data input
-    const dataValidation = useMemo((): DataValidation => {
-        if (!dataInput.trim()) {
-            return { isValid: false, error: "Data is required" };
-        }
-
-        try {
-            const parsedData = JSON.parse(dataInput);
-
-            if (!selectedWidget) {
-                return { isValid: false, error: "Please select a widget type" };
-            }
-
-            // Validate data type matches widget requirements
-            if (selectedWidget.requiredDataType === "array" && !Array.isArray(parsedData)) {
-                return {
-                    isValid: false,
-                    error: `${selectedWidget.name} requires array data. Example: [{"name": "A", "value": 10}]`,
-                };
-            }
-
-            if (
-                selectedWidget.requiredDataType === "object" &&
-                (Array.isArray(parsedData) || typeof parsedData !== "object")
-            ) {
-                return {
-                    isValid: false,
-                    error: `${selectedWidget.name} requires object data. Example: {"value": 100}`,
-                };
-            }
-
-            // Validate array structure for charts
-            if (selectedWidget.category === "Charts" && Array.isArray(parsedData)) {
-                const hasValidStructure = parsedData.every(
-                    (item) =>
-                        typeof item === "object" &&
-                        item !== null &&
-                        "name" in item &&
-                        "value" in item,
-                );
-
-                if (!hasValidStructure) {
-                    return {
-                        isValid: false,
-                        error: "Chart data must be array of objects with \"name\" and \"value\" properties",
-                    };
-                }
-            }
-
-            // Validate specific requirements for number card
-            if (selectedWidget.type === ITEM_TYPES.NUMBER_CARD && typeof parsedData === "object") {
-                if (!("value" in parsedData)) {
-                    return {
-                        isValid: false,
-                        error: "Number card requires \"value\" property. Example: {\"value\": 123}",
-                    };
-                }
-            }
-
-            return { isValid: true, parsedData };
-        } catch (error) {
-            return { isValid: false, error: "Invalid JSON format" };
-        }
-    }, [dataInput, selectedWidget]);
-
-    const handleConfigChange = (key: string, value: any) => {
+    const handleConfigChange = (key: string, value: string) => {
         setConfig((prev) => ({ ...prev, [key]: value }));
     };
 
     const handleAddWidget = () => {
-        if (!selectedWidget || !dataValidation.isValid) {
+        if (!selectedWidget) {
             return;
         }
 
         const widget = {
             type: selectedWidget.type,
             title: config.title || selectedWidget.name,
-            config: {
-                ...config,
-                dataSource: {
-                    type: "static",
-                    data: dataValidation.parsedData,
-                },
+            id: config.id,
+            dataId: config.dataId,
+
+            layout: {
+                ...config.layout,
             },
-            data: dataValidation.parsedData,
         };
 
         onAddWidget(widget);
@@ -218,40 +84,23 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
     };
 
     const renderPreview = () => {
-        if (!selectedWidget || !dataValidation.isValid) {
+        if (!selectedWidget) {
             return (
                 <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                     <div className="text-center text-gray-400">
-                        {!selectedWidget ? (
-                            <>
-                                <Type className="w-12 h-12 mx-auto mb-3" />
-                                <p className="text-sm">Select a widget type to see preview</p>
-                            </>
-                        ) : !dataValidation.isValid ? (
-                            <>
-                                <AlertCircle className="w-12 h-12 mx-auto mb-3 text-red-400" />
-                                <p className="text-sm text-red-600">
-                                    Fix data errors to see preview
-                                </p>
-                                <p className="text-xs text-red-500 mt-1">{dataValidation.error}</p>
-                            </>
-                        ) : null}
+                        <Type className="w-12 h-12 mx-auto mb-3" />
+                        <p className="text-sm">Select a widget type to see preview</p>
                     </div>
                 </div>
             );
         }
-
-        // const previewProps = {
-        //     title: config.title || selectedWidget.name,
-        //     ...config,
-        // };
 
         try {
             switch (selectedWidget.type) {
                 case ITEM_TYPES.NUMBER_CARD:
                     return (
                         <NumberCard
-                            value={dataValidation.parsedData?.value || "0"}
+                            value={"0"}
                             detail={config.title || "Metric"}
                             color="green"
                             icon="TrendingUp"
@@ -262,15 +111,18 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                 case ITEM_TYPES.BUTTON:
                     return (
                         <div className="h-full flex items-center justify-center">
-                            <Button>
-                                {dataValidation.parsedData?.label || config.title || "Button"}
-                            </Button>
+                            <Button>{config.title || "Button"}</Button>
                         </div>
                     );
                 case ITEM_TYPES.LINE_CHART:
                 case ITEM_TYPES.BAR_CHART:
                 case ITEM_TYPES.PIE_CHART:
-                    return <Charts type={selectedWidget.type as ChartType} />;
+                    return (
+                        <Charts
+                            type={selectedWidget.type as ChartType}
+                            dataId={config.dataId}
+                        />
+                    );
                 default:
                     return (
                         <div className="h-full flex items-center justify-center text-gray-400">
@@ -278,7 +130,7 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                         </div>
                     );
             }
-        } catch (error) {
+        } catch {
             return (
                 <div className="h-full flex items-center justify-center bg-red-50 rounded-lg">
                     <div className="text-center text-red-600">
@@ -299,7 +151,7 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
             case ITEM_TYPES.NUMBER_CARD:
                 return (
                     <div className="space-y-3">
-                        <div>
+                        {/* <div>
                             <Label className="text-sm font-medium">Format</Label>
                             <Select
                                 value={config.format || "number"}
@@ -329,7 +181,7 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                                     <SelectItem value="purple">Purple</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </div> */}
                     </div>
                 );
 
@@ -337,7 +189,7 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                 return (
                     <div>
                         <Label className="text-sm font-medium">Button Action</Label>
-                        <Select
+                        {/* <Select
                             value={config.action || "navigate"}
                             onValueChange={(value) => handleConfigChange("action", value)}>
                             <SelectTrigger>
@@ -349,7 +201,7 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                                 <SelectItem value="download">Download</SelectItem>
                                 <SelectItem value="custom">Custom Action</SelectItem>
                             </SelectContent>
-                        </Select>
+                        </Select> */}
                     </div>
                 );
 
@@ -368,9 +220,7 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                 aria-describedby="widget-dialog-description">
                 <DialogHeader>
                     <DialogTitle>
-                        {isEditMode
-                            ? `Edit ${editingWidget?.settings?.title || "Widget"}`
-                            : "Add Widget"}
+                        {isEditMode ? `Edit ${editingWidget?.title || "Widget"}` : "Add Widget"}
                     </DialogTitle>
                     <DialogDescription>
                         {isEditMode
@@ -458,8 +308,10 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                                     <div>
                                         <Label className="text-sm font-medium">Data Source</Label>
                                         <Select
-                                            value="static"
-                                            disabled>
+                                            value={config.dataId || ""}
+                                            onValueChange={(value) =>
+                                                handleConfigChange("dataId", value)
+                                            }>
                                             <SelectTrigger className="mt-1">
                                                 <SelectValue />
                                             </SelectTrigger>
@@ -480,63 +332,6 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
 
                                     {/* Widget-specific fields */}
                                     {renderWidgetSpecificFields()}
-
-                                    {/* Data Input */}
-                                    <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <Label className="text-sm font-medium">Data</Label>
-                                            <div className="flex items-center space-x-1">
-                                                {dataValidation.isValid ? (
-                                                    <CheckCircle className="w-4 h-4 text-green-500" />
-                                                ) : (
-                                                    <AlertCircle className="w-4 h-4 text-red-500" />
-                                                )}
-                                                <span
-                                                    className={cn(
-                                                        "text-xs",
-                                                        dataValidation.isValid
-                                                            ? "text-green-600"
-                                                            : "text-red-600",
-                                                    )}>
-                                                    {dataValidation.isValid ? "Valid" : "Invalid"}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <textarea
-                                            value={dataInput}
-                                            onChange={(e) => setDataInput(e.target.value)}
-                                            placeholder={`Enter JSON data (${selectedWidget.requiredDataType})`}
-                                            className={cn(
-                                                "w-full h-32 px-3 py-2 text-sm border rounded-md resize-none font-mono",
-                                                "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                                                dataValidation.isValid
-                                                    ? "border-gray-300"
-                                                    : "border-red-300 bg-red-50",
-                                            )}
-                                        />
-
-                                        {!dataValidation.isValid && dataValidation.error && (
-                                            <p className="text-xs text-red-600 mt-1">
-                                                {dataValidation.error}
-                                            </p>
-                                        )}
-
-                                        <div className="mt-2">
-                                            <p className="text-xs text-gray-500">
-                                                Expected format: {selectedWidget.requiredDataType}
-                                            </p>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-xs p-0 h-auto text-blue-600 hover:text-blue-700"
-                                                onClick={() =>
-                                                    setDataInput(selectedWidget.sampleData)
-                                                }>
-                                                Use sample data
-                                            </Button>
-                                        </div>
-                                    </div>
                                 </div>
                             ) : (
                                 <div className="text-center py-8 text-gray-500">
@@ -570,7 +365,7 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                 <DialogFooter>
                     <div className="flex justify-between w-full">
                         <div className="text-sm text-gray-500">
-                            {selectedWidget && dataValidation.isValid && (
+                            {selectedWidget && (
                                 <span className="flex items-center space-x-1">
                                     <CheckCircle className="w-4 h-4 text-green-500" />
                                     <span>Ready to add widget</span>
@@ -585,7 +380,7 @@ export const AddWidgetDialog: React.FC<SingleStepAddWidgetDialogProps> = ({
                             </Button>
                             <Button
                                 onClick={handleAddWidget}
-                                disabled={!selectedWidget || !dataValidation.isValid}>
+                                disabled={!selectedWidget}>
                                 {isEditMode ? "Update Widget" : "Add Widget"}
                             </Button>
                         </div>

@@ -1,1 +1,1 @@
-export * from "./Indicaor";
+export * from "./Indicator";

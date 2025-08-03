@@ -2,21 +2,12 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/Card";
 import { Button } from "../../components/Button";
 import NumberCard from "../../DashboardItems/NumberCard/NumberCard";
-import Indicaor from "../../DashboardItems/Indicator/Indicaor";
+import Indicator from "../../DashboardItems/Indicator/Indicator";
 import Charts from "../../DashboardItems/Charts/Charts";
 import { ITEM_TYPES } from "../../utils/constants";
 import { Edit3, Grid3x3, X } from "lucide-react";
 import { cn } from "../../utils";
 
-interface DashboardItemProps {
-    type: ItemType;
-    settings: DashboardItemSettings;
-    isSelected?: boolean;
-    isEditing?: boolean;
-    onSelect?: () => void;
-    onDelete: () => void;
-    onEdit: () => void;
-}
 
 const DashboardItem: React.FC<DashboardItemProps> = ({
     type,
@@ -30,20 +21,25 @@ const DashboardItem: React.FC<DashboardItemProps> = ({
             case ITEM_TYPES.NUMBER_CARD:
                 return (
                     <NumberCard
-                        value={settings.value || ""}
+                        value={settings.title || ""}
                         detail={settings.title || ""}
                         color="green"
                         icon={"TrendingUp"}
                     />
                 );
             case ITEM_TYPES.INDICATOR:
-                return <Indicaor title={settings.title || "Indicator"} />;
+                return <Indicator title={settings.title || "Indicator"} />;
             case ITEM_TYPES.BUTTON:
-                return <Button>{settings.label || "Button"}</Button>;
+                return <Button>{settings.title || "Button"}</Button>;
             case ITEM_TYPES.PIE_CHART:
             case ITEM_TYPES.LINE_CHART:
             case ITEM_TYPES.BAR_CHART:
-                return <Charts type={type as ChartType} />;
+                return (
+                    <Charts
+                        type={type as ChartType}
+                        dataId={settings.dataId}
+                    />
+                );
             default:
                 return (
                     <div className="text-center text-gray-400">
