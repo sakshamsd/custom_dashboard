@@ -74,6 +74,13 @@ export default [
         },
 
         files: ["**/*.ts", "**/*.tsx"],
-        ignores: ["node_modules/**", "dist/**", "build/**"],
+        ignores: [
+            "node_modules/**",
+            "dist/**",
+            "build/**",
+            "src/**/*.d.ts",
+            "src/**/*.test.ts",
+            "src/**/*.test.tsx",
+        ],
     },
 ];

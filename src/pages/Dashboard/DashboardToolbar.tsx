@@ -1,16 +1,6 @@
 // src/pages/Dashboard/SimplifiedToolbar.tsx
 import React from "react";
-import {
-    Plus,
-    Save,
-   
-    Settings,
-    Share2,
-    Download,
-    MoreHorizontal,
-    X,
-    Edit3,
-} from "lucide-react";
+import { Plus, Save, Settings, Share2, Download, MoreHorizontal, X, Edit3 } from "lucide-react";
 import { Button } from "../../components/Button";
 import {
     DropdownMenu,
@@ -23,7 +13,6 @@ import { cn } from "../../utils";
 
 interface DashboardToolbarProps {
     isEditing: boolean;
-    hasUnsavedChanges: boolean;
 
     onStartEdit: () => void;
     onAddWidget: () => void;
@@ -37,7 +26,6 @@ interface DashboardToolbarProps {
 
 export const DashboardToolbar: React.FC<DashboardToolbarProps> = ({
     isEditing,
-    hasUnsavedChanges,
 
     onAddWidget,
     onStartEdit,
@@ -62,19 +50,6 @@ export const DashboardToolbar: React.FC<DashboardToolbarProps> = ({
                             <Plus className="w-4 h-4 mr-2" />
                             Add Widget
                         </Button>
-
-                        {/* Status Indicator */}
-                        {hasUnsavedChanges && (
-                            <>
-                                <div className="h-6 w-px bg-gray-300" />
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                                    <span className="text-sm text-orange-600 font-medium">
-                                        Unsaved changes
-                                    </span>
-                                </div>
-                            </>
-                        )}
                     </div>
                 ) : (
                     /* View Mode - Show Edit Button */
@@ -137,11 +112,8 @@ export const DashboardToolbar: React.FC<DashboardToolbarProps> = ({
                             onClick={onSave}
                             className={cn(
                                 "px-4 py-2 font-medium",
-                                hasUnsavedChanges
-                                    ? "bg-green-600 hover:bg-green-700 text-white"
-                                    : "bg-gray-400 text-gray-200 cursor-not-allowed",
-                            )}
-                            disabled={!hasUnsavedChanges}>
+                                "bg-green-600 hover:bg-green-700 text-white",
+                            )}>
                             <Save className="w-4 h-4 mr-2" />
                             Save
                         </Button>

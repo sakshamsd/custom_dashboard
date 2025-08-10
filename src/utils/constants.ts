@@ -75,9 +75,6 @@ export const WIDGET_TYPES = [
         description: "Display key metrics",
         icon: TrendingUp,
         type: ITEM_TYPES.NUMBER_CARD,
-        category: "Metrics",
-        requiredDataType: "object",
-        sampleData: "{\"value\": 124500}",
     },
     {
         id: "indicator",
@@ -85,9 +82,6 @@ export const WIDGET_TYPES = [
         description: "Show system status",
         icon: Activity,
         type: ITEM_TYPES.INDICATOR,
-        category: "Metrics",
-        requiredDataType: "object",
-        sampleData: "{\"status\": \"online\"}",
     },
     {
         id: "button",
@@ -95,15 +89,13 @@ export const WIDGET_TYPES = [
         description: "Action trigger",
         icon: MousePointer,
         type: ITEM_TYPES.BUTTON,
-        category: "Controls",
-        requiredDataType: "object",
-        sampleData: "{\"label\": \"Click me\"}",
     },
 ];
 
+
 export const DATA_SOURCES = [
-    { value: "static", label: "Static Data" },
-    { value: "api", label: "API Endpoint" },
-    { value: "database", label: "Database Query" },
-    { value: "realtime", label: "Real-time Stream" },
+    { value: "b43e07ac-1fab-4e52-9c6f-de3657b6c556", label: "Revenue in year 2025" },
+    { value: "5a8c4bfe-8414-47e0-ba30-891d6b6677a4", label: "Sales in year 2025" },
+    { value: "8b9a97ed-e377-4fd6-a302-e167e6b98284", label: "Total Sales in year 2025" },
+    { value: "990b4523-d069-4147-8e5f-e9d57ac6ee14", label: "New Customers in year 2025" },
 ];
